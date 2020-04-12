@@ -1,0 +1,32 @@
+version: "3"
+
+services:
+  apex_db:
+    container_name: apex_db
+    image: postgres:12-alpine
+    ports: [ "5432:5432" ]
+    networks: [ apex_net ]
+    env_file: [ ".env" ]
+    volumes:
+      - 'postgres:/var/lib/postgresql/data'
+    logging:
+      driver: "none"
+
+  apex_app:
+    image: apex_app:latest
+    container_name: apex_app
+    build: .
+    command: sh start
+    volumes: [ ".:/apex_app", ".gems_apex:/.gems_apex" ]
+    ports: [ "3000:3000" ]
+    networks: [ apex_net ]
+    links: [ apex_db ]
+    depends_on: [ apex_db ]
+    env_file: [ ".env" ]
+
+volumes:
+  .gems_apex:
+
+networks:
+  apex_net:
+    driver: bridge
